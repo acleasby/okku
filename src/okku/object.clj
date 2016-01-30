@@ -6,30 +6,9 @@
 
 
 
-(defmacro let-map
-  "A version of let that returns its local variables in a map.
-If a result is computed in the body, let-map returns a vector
-containing the map of local variables followed by the result."
-  [var-exprs & body]
-  (let [vars (map (fn [[var form]] [(keyword var) var]) (partition 2 var-exprs))
-        has-body (not (empty? body))]
-    `(let [~@var-exprs
-           result# (do ~@body)
-           mapvars# (into {} [~@vars])]
-       (if ~has-body
-         [mapvars# result#]
-         mapvars#))))
 
 
-(defmacro let-fnmap
-  "A version of letfn that returns its functions in a map.
-If a result is computed in the body, let-nfmap returns a vector
-containing the map of local variables followed by the result."
-  [fn-exprs & body])
-
-
-
-;(defclass Hello [name :- s/Str] :extends Object
+;(defclass Hello [name :- s/Str] :extends Object :implements [Serializable]
 ;  "Doc string for class here"
 ;
 ;  [count (atom 1)]
@@ -110,13 +89,29 @@ containing the map of local variables followed by the result."
   :extends java.lang.Object
   :implements []
   :prefix "hello-"
-  :exposes-methods {toString hello-super-toString}
+  :exposes-methods {toString superToString}
   :methods [[restart [] (this-class "Hello")]
             [toString [] String]
             [sayhello [] (this-class "Hello")]
             [status [] Long]]
   :state state
   :init hello-constructor)
+
+
+;; gen-class with Java annotations
+(gen-class :name ^{Deprecated {}
+                   SuppressWarnings ["Warning1"] ; discarded
+                   java.lang.annotation.Target []}
+                 clojure.test_clojure.genclass.examples.ExampleAnnotationClass
+           :prefix "annot-"
+           :methods [[^{Deprecated {}
+                        Override {}}    ;discarded
+                      foo
+                      [^{java.lang.annotation.Retention java.lang.annotation.RetentionPolicy/SOURCE
+                         java.lang.annotation.Target    [java.lang.annotation.ElementType/TYPE
+                                                         java.lang.annotation.ElementType/PARAMETER]}
+                       String]
+                      void]])
 
 (compile *ns*)
 
