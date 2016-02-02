@@ -2,9 +2,9 @@
   "The beginning of a spike whose intent is to make full Java OO available inside Clojure in a
   Clojure-idiomatic manner."
   (:require [okku.caller :refer :all]
-            [clojure.string :as s]))
-
-
+            [okku.lang :refer :all]
+            [clojure.string :as s])
+  (:gen-class))
 
 
 
@@ -32,6 +32,30 @@
 ;   @count))
 
 
+(defmacro defclass
+  "An easier way to use gen-class to make classed in Clojure that extend Java types.
+  The purpose here is not to implement every Java class feature in Clojure, but to
+  implement enough so that Clojure can more easily be used as a multi-paradigm
+  functional-OO language.
+
+  Usage:
+
+  (defclass ClassName [public fields] :extends Supertype :implements [A B C]
+  \"Doc string\"
+  [private fields]
+
+  Annotationclass {:key :value}
+  (method1
+    \"doc string\"
+    [params]
+    forms...)
+
+  (method2
+    \"doc string\"
+    [params]
+    forms...))"
+  [class-name & body])
+
 
 ;; ... macroexpands to something like:
 
@@ -39,7 +63,7 @@
 ;; or maybe code from that to make Class types defined in Clojure implement IPersistentMap
 (defn- hello-constructor
  "Create a Hello object."
- [name :- s/Str]
+ [name]
 
  ;; Object instance data
  (let [count (atom 1)]
@@ -113,12 +137,9 @@
                        String]
                       void]])
 
-(compile *ns*)
+;; (compile (symbol (.toString *ns*)))
 
 
-(defmacro defclass
-  "A class-based object system for Clojure"
-  [class-name fields-vector & body])
 
 
 

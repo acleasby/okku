@@ -5,6 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.7.0"]
+                 [com.roomkey/annotate "1.0.1"]
+                 [potemkin "0.4.1"]
                  [com.typesafe.akka/akka-actor_2.11 "2.3.14"]
                  [com.typesafe.akka/akka-remote_2.11 "2.3.14"]
                  [com.typesafe.akka/akka-kernel_2.11 "2.3.14"]]
