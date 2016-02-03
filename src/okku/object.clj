@@ -3,8 +3,44 @@
   Clojure-idiomatic manner."
   (:require [okku.caller :refer :all]
             [okku.lang :refer :all]
-            [clojure.string :as s])
-  (:gen-class))
+            [clojure.string :as s]))
+
+
+
+;; Define type names; no way to type check right now, but it's still useful for documentation
+(def InstanceData {Keyword Any})
+(def ParameterNames [Keyword])
+(def Methods {Keyword Fn})
+
+;; An object instance constructed from a function that exposes its parameter values
+;; as map keys and a map of
+(p/def-map-type ObjectInstanceMetadata
+  [param-values parameter-names methods] ; :- [InstanceData ParameterNames Methods]
+
+  (get [_ k default-value]
+       (if (contains? param-values k)
+         (let [v (get param-values k)]
+           (if (instance? clojure.lang.Delay v)
+             @v
+             v))
+         default-value))
+
+  (assoc [_ k v]
+         (ObjectInstance. (assoc param-values k v)  methods))
+
+  (dissoc [this k]
+          (if (contains? parameter-names k)
+            (throw (IllegalStateException. (str "Cannot remove a core object parameter value: " k)))
+            (ObjectInstance. (dissoc param-values k) methods)))
+
+  (keys [_]
+        (keys param-values))
+
+  (meta [_]
+        (meta param-values))
+
+  (with-meta [_ metadata]
+    (ObjectInstance. (with-meta param-values metadata) methods)))
 
 
 
@@ -57,6 +93,7 @@
   [class-name & body])
 
 
+;; @See https://www.deepbluelambda.org/programming/clojure/generate-your-class-and-proxy-it-too
 ;; ... macroexpands to something like:
 
 ;; Use def-map-type from https://github.com/coconutpalm/potemkin ?
@@ -137,7 +174,9 @@
                        String]
                       void]])
 
-;; (compile (symbol (.toString *ns*)))
+
+;(when-not *compile-files*
+;  (compile (symbol (.toString *ns*))))
 
 
 
