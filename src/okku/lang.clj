@@ -2,11 +2,10 @@
   "The beginning of a spike whose intent is to make full Java OO available inside Clojure in a
   Clojure-idiomatic manner."
   (:require [okku.caller :refer :all]
-            [annotate.core :refer :all]
-            [annotate.records :refer :all]
-            [annotate.types :refer :all]
+            [schema.core :as t :refer [defschema]]
             [potemkin :as p]
-            [clojure.string :as s]))
+            [clojure.string :as s])
+  (:import [clojure.lang IFn]))
 
 
 (defmacro let-map
@@ -46,4 +45,42 @@ containing the map of functions followed by the result."
          [~fn-map ~@body]
          ~fn-map))))
 
+
+
+(defschema InstanceData {t/Keyword t/Any})
+(defschema ParameterNames [t/Keyword])
+(defschema MethodTable {t/Keyword IFn})
+
+
+;; An object instance constructed from a function that exposes its parameter values
+;; as map keys and a map of methods
+(p/def-map-type ObjectInstanceMetadata
+  [parameter-values                     ;- InstanceData
+   parameter-names                      ;- ParameterNames
+   methods]                             ;- MethodTable
+
+  (get [_ k default-value]
+       (if (contains? parameter-values k)
+         (get parameter-values k)
+         default-value))
+
+  (assoc [_ k v]
+         (ObjectInstanceMetadata. (assoc parameter-values k v) parameter-names  methods))
+
+  (dissoc [this k]
+          (if (contains? parameter-names k)
+            (throw (IllegalStateException. (str "Cannot remove a core object parameter value: " k)))
+            (ObjectInstanceMetadata. (dissoc parameter-values k) parameter-names methods)))
+
+  (keys [_]
+        (keys parameter-values))
+
+  (meta [_]
+        (meta parameter-values))
+
+  (with-meta [_ metadata]
+    (ObjectInstanceMetadata. (with-meta parameter-values metadata) parameter-names methods)))
+
+
+(defschema ClassHeader {})
 
