@@ -5,7 +5,7 @@
             [schema.core :as t :refer [defschema]]
             [potemkin :as p]
             [clojure.string :as s])
-  (:import [clojure.lang IFn]))
+  (:import [clojure.lang IFn Symbol]))
 
 
 (defmacro let-map
@@ -33,6 +33,7 @@ containing the map of local variables followed by the result."
     [(keyword fn-name) fn-name]))
 
 
+
 (defmacro letfn-map
   "A version of letfn that returns its functions in a map.
 If a result is computed in the body, let-fnmap returns a vector
@@ -44,6 +45,8 @@ containing the map of functions followed by the result."
        (if ~has-body
          [~fn-map ~@body]
          ~fn-map))))
+
+
 
 
 
@@ -82,5 +85,12 @@ containing the map of functions followed by the result."
     (ObjectInstanceMetadata. (with-meta parameter-values metadata) parameter-names methods)))
 
 
-(defschema ClassHeader {})
+(defschema TypedFields [Symbol :- Symbol (t/optional (t/recursive #'SchemaFields) "MoreFields")])
+(defschema AnyFields [t/Any])
+
+(defschema ClassHeader
+  {:class-name Symbol
+   :public-fields (t/conditional SchemaFields AnyFields)
+   :superclass Class
+   :implements [Class]})
 
