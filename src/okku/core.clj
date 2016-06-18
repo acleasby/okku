@@ -4,7 +4,7 @@
   (:import [akka.actor ActorRef ActorSystem Props UntypedActor
             Deploy Address AddressFromURIString]
            [akka.japi Creator]
-           [akka.routing RoundRobinRouter]
+           [akka.routing RoundRobinRoutingLogic Router]
            [akka.remote RemoteScope]
            [akka.pattern Patterns]
            [scala.concurrent Await]
@@ -16,7 +16,7 @@
 
 (defn round-robin-router
   "Creates a round-robin router with n replicas."
-  [n] (RoundRobinRouter. n))
+  [routees] (Router. (RoundRobinRoutingLogic. ) routees))
 
 (defn- base-remote-config
   "Defines the minimal set of options required to use Akka in a distributed
